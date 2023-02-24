@@ -3,13 +3,19 @@ import data.real.basic
 -- 0017: practising conjunction
 example (P Q R : Prop) : P ∧ Q → Q ∧ P :=
 begin
-  sorry
+  intro h,
+  cases h with hp hq,
+  split,
+  exact hq,
+  exact hp,
 end
 
 -- 0018: use compression techniques
 example (P Q R : Prop): P ∧ Q → Q ∧ P :=
 begin
-  sorry
+  intro h,
+  cases h with hP hQ,
+  exact ⟨hQ, hP⟩,
 end
 
 -- 0025: practising forall
@@ -19,7 +25,10 @@ def non_increasing (f : ℝ → ℝ) := ∀ x₁ x₂, x₁ ≤ x₂ → f x₁ 
 
 example (f g : ℝ → ℝ) (hf : non_decreasing f) (hg : non_increasing g) : non_increasing (g ∘ f) :=
 begin
-  sorry
+  intros x y h,
+  apply hg,
+  apply hf,
+  exact h,
 end
 
 -- 0026: practising disjunction
@@ -27,7 +36,16 @@ end
 
 example (x y : ℝ) : x^2 = y^2 → x = y ∨ x = -y :=
 begin
-  sorry
+  intros h,
+  have H : (x + y)*(x - y) = 0,
+  { calc (x + y)*(x - y) = x^2 - y^2 : by ring
+                     ... = 0 : by linarith, },
+  rw mul_eq_zero at H,
+  cases H with Hp Hm,
+  right,
+  linarith,
+  left,
+  linarith,
 end
 
 -- 0031: practising exists

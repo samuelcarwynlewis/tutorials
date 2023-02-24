@@ -30,7 +30,20 @@ Let's start with a variation on a known exercise.
 lemma le_lim {x y : ℝ} {u : ℕ → ℝ} (hu : seq_limit u x)
   (ineg : ∃ N, ∀ n ≥ N, y ≤ u n) : y ≤ x :=
 begin
-  sorry
+  by_contradiction bs,
+  have hyx: (y - x)/2 > 0,
+    {linarith,},
+  let eps := (y - x)/2,
+  cases (hu eps hyx) with N0 lim,
+  cases ineg with N1 leq,
+  set N := max N0 N1,
+  have hyu: ∀ n ≥ N, y - u n > 0,
+  intro n,
+  intro hn,
+  calc y - u n = (y - x) - (u n - x) : by linarith
+     ... > 2*eps - eps : by linarith, rw lim
+     ... = eps     : by linarith
+     ... > 0 : by rw hyx,
 end
 
 /-

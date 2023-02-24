@@ -65,7 +65,7 @@ Sometimes unfolding is necessary because we want to apply a tactic
 that operates purely on the syntactical level.
 The main such tactic is `rw`.
 
-The same property of `rw` explain why the first computation line
+The same property of `rw` explains why the first computation line
 is necessary, although its proof is simply `rfl`.
 Before that line, `rw hf x` won't find anything like `f (-x)` hence
 will give up.
@@ -101,13 +101,17 @@ you can put your mouse cursor above the symbol and wait for one second.
 -- 0023
 example (f g : ℝ → ℝ) : even_fun f → even_fun (g ∘ f) :=
 begin
-  sorry
+  intros hf x,
+  calc (g ∘ f)(-x) = g(f(-x)) : rfl
+               ... = g(f(x)) : by rw hf,
 end
 
 -- 0024
 example (f g : ℝ → ℝ) : odd_fun f → odd_fun g →  odd_fun (g ∘ f) :=
 begin
-  sorry
+  intros hf hg x,
+  calc (g ∘ f)(-x) = g(f(-x)) : rfl
+               ... = -g(f(x)) : by rw [hf, hg],
 end
 
 /-
@@ -195,7 +199,10 @@ end
 -- 0025
 example (f g : ℝ → ℝ) (hf : non_decreasing f) (hg : non_increasing g) : non_increasing (g ∘ f) :=
 begin
-  sorry
+  intros x y h,
+  apply hg,
+  apply hf,
+  exact h,
 end
 
 /-
@@ -236,7 +243,16 @@ end
 -- 0026
 example (x y : ℝ) : x^2 = y^2 → x = y ∨ x = -y :=
 begin
-  sorry
+  intros h,
+  have H : (x + y)*(x - y) = 0,
+  { calc (x + y)*(x - y) = x^2 - y^2 : by ring
+                     ... = 0 : by linarith, },
+  rw mul_eq_zero at H,
+  cases H with Hp Hm,
+  right,
+  linarith,
+  left,
+  linarith,
 end
 
 /-
@@ -247,7 +263,18 @@ In the next exercise, we can use:
 -- 0027
 example (f : ℝ → ℝ) : non_decreasing f ↔ ∀ x y, x < y → f x ≤ f y :=
 begin
-  sorry
+  split,
+
+  intros hf x y hxy,
+  apply hf,
+  linarith,
+
+  intros hf x y hxy,
+  have key : x = y ∨ x < y,
+  exact eq_or_lt_of_le hxy,
+  cases key with heq hlt,
+  rw heq,
+  exact hf x y hlt,
 end
 
 /-
@@ -258,6 +285,19 @@ In the next exercise, we can use:
 -- 0028
 example (f : ℝ → ℝ) (h : non_decreasing f) (h' : ∀ x, f (f x) = x) : ∀ x, f x = x :=
 begin
-  sorry
+  intros x,
+  have key : x ≤ f x ∨ f x ≤ x,
+  exact le_total x (f x),
+  cases key with left right,
+
+  have : f x ≤ x,
+  calc f x ≤ f (f x) : by exact h x (f x) left
+       ... = x : by exact h' x,
+  linarith,
+
+  have : x ≤ f x,
+  calc f x ≥ f (f x) : by exact h (f x) x right
+        ... = x : by exact h' x,
+  linarith,
 end
 
