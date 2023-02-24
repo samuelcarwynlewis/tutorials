@@ -46,7 +46,11 @@ variables (a b c : ℤ)
 -- 0029
 example (h₁ : a ∣ b) (h₂ : b ∣ c) : a ∣ c :=
 begin
-  sorry
+  cases h₁ with m hm,
+  cases h₂ with n hn,
+  use m*n,
+  rwa hm at hn,
+  linarith,
 end
 
 /-
@@ -84,7 +88,15 @@ end
 -- 0030
 example : 0 ∣ a ↔ a = 0 :=
 begin
-  sorry
+  split,
+
+  intro h,
+  cases h with m hm,
+  linarith,
+
+  intro h,
+  use 0,
+  linarith,
 end
 
 /-
@@ -103,7 +115,10 @@ variables (f g : ℝ → ℝ)
 -- 0031
 example (h : surjective (g ∘ f)) : surjective g :=
 begin
-  sorry
+  intro z,
+  cases h z with x hx,
+  use f x,
+  linarith,
 end
 
 /- 
@@ -114,6 +129,11 @@ next exercise in four lines.
 -- 0032
 example (hf : surjective f) (hg : surjective g) : surjective (g ∘ f) :=
 begin
-  sorry
+  intro z,
+  cases hg z with y hy,
+  cases hf y with x hx,
+  use x,
+  rw ← hx at hy,
+  linarith,
 end
 
