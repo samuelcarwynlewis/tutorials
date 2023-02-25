@@ -61,7 +61,12 @@ variables (u v w : ℕ → ℝ) (l l' : ℝ)
 -- 0033
 example : (∀ n, u n = l) → seq_limit u l :=
 begin
-  sorry
+  intros hl eps heps,
+  use 0,
+  intros n hn,
+  rw hl,
+  norm_num,
+  linarith,
 end
 
 /- When dealing with absolute values, we'll use lemmas:
@@ -80,7 +85,13 @@ hand since they are used in many exercises.
 -- 0034
 example (hl : l > 0) : seq_limit u l → ∃ N, ∀ n ≥ N, u n ≥ l/2 :=
 begin
-  sorry
+  intros h,
+  cases h (l/2) (by linarith) with N hN,
+  use N,
+  intros n hn,
+  specialize hN n hn,
+  rw abs_le at hN,
+  linarith,
 end
 
 /- 
@@ -151,7 +162,20 @@ example (hu : seq_limit u l) (hw : seq_limit w l)
 (h : ∀ n, u n ≤ v n)
 (h' : ∀ n, v n ≤ w n) : seq_limit v l :=
 begin
-  sorry
+  intros eps heps,
+  cases hu eps heps with N hN,
+  cases hw eps heps with N' hN',
+  use max N N',
+  intros n hn,
+  rw ge_max_iff at hn,
+  specialize hN n (by linarith),
+  specialize hN' n (by linarith),
+  specialize h n,
+  specialize h' n,
+  rw abs_le at *,
+  split,
+  linarith,
+  linarith,
 
 end
 
@@ -160,7 +184,22 @@ end
 example (u l) : seq_limit u l ↔
  ∀ ε > 0, ∃ N, ∀ n ≥ N, |u n - l| < ε :=
 begin
-  sorry
+  split,
+
+  intros h eps heps,
+  cases h (eps/2) (by linarith) with N hN,
+  use N,
+  intros n hn,
+  specialize hN n hn,
+  linarith,
+
+  intros h eps heps,
+  cases h eps heps with N hN,
+  use N,
+  intros n hn,
+  specialize hN n hn,
+  linarith,
+
 end
 
 /- In the next exercise, we'll use
@@ -172,7 +211,23 @@ eq_of_abs_sub_le_all (x y : ℝ) : (∀ ε > 0, |x - y| ≤ ε) → x = y
 -- 0037
 example : seq_limit u l → seq_limit u l' → l = l' :=
 begin
-  sorry
+  intros h h',
+  apply eq_of_abs_sub_le_all,
+  intros eps heps,
+  cases h (eps/2) (by linarith) with N hN,
+  cases h' (eps/2) (by linarith) with N' hN',
+  let M := max N N',
+  have hM : M ≥ N ∧ M ≥ N',
+  split,
+  apply le_max_left,
+  apply le_max_right,
+  specialize hN M hM.left,
+  specialize hN' M hM.right,
+  calc 
+  |l - l'| = |(l - u M) + (u M - l')| : by ring_nf
+    ... ≤ |l - u M| + |u M - l'| : by apply abs_add
+    ... = |u M - l| + |u M - l'| : by rw abs_sub_comm
+    ... ≤ eps : by linarith [hN, hN'],
 end
 
 /-
@@ -188,6 +243,14 @@ def is_seq_sup (M : ℝ) (u : ℕ → ℝ) :=
 example (M : ℝ) (h : is_seq_sup M u) (h' : non_decreasing u) :
 seq_limit u M :=
 begin
-  sorry
+  intros eps heps,
+  cases h with huM hMeps,
+  cases hMeps eps heps with n₀ hn₀,
+  use n₀,
+  intros n hn,
+  rw abs_le,
+  split,
+  linarith [huM n, h' n₀ n hn],
+  linarith [huM n, h' n₀ n hn],
 end
 
